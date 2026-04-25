@@ -1,0 +1,90 @@
+{
+  "model": "Random Forest",
+  "dataset": "IBM HR Attrition",
+  "total_records": 1470,
+  "test_records": 294,
+  "model_accuracy": 84.4,
+  "metrics": {
+    "demographic_parity_gender": {
+      "value": 0.0379,
+      "status": "PASS",
+      "threshold": 0.1,
+      "description": "Gap in attrition prediction rate between Male and Female employees"
+    },
+    "demographic_parity_age": {
+      "value": 1.0,
+      "status": "FAIL",
+      "threshold": 0.1,
+      "description": "Gap in attrition prediction rate across age groups"
+    },
+    "equalized_odds_gender": {
+      "value": 0.05,
+      "status": "PASS",
+      "threshold": 0.1,
+      "description": "Combined TPR and FPR gap between Male and Female"
+    },
+    "equalized_odds_age": {
+      "value": 1.0,
+      "status": "FAIL",
+      "threshold": 0.1,
+      "description": "Combined TPR and FPR gap across age groups"
+    },
+    "disparate_impact_gender": {
+      "value": 0.3724,
+      "status": "FAIL",
+      "threshold": 0.8,
+      "description": "Legal 4/5ths rule: ratio of selection rates between gender groups"
+    },
+    "disparate_impact_age": {
+      "value": 0.0,
+      "status": "FAIL",
+      "threshold": 0.8,
+      "description": "Legal 4/5ths rule: ratio of selection rates across age groups"
+    },
+    "disparate_impact_marital": {
+      "value": 0.0,
+      "status": "FAIL",
+      "threshold": 0.8,
+      "description": "Legal 4/5ths rule: ratio of selection rates across marital status"
+    },
+    "equal_opportunity_gender": {
+      "value": 0.004,
+      "status": "PASS",
+      "threshold": 0.1,
+      "description": "Gap in True Positive Rate (recall) between Male and Female"
+    },
+    "equal_opportunity_age": {
+      "value": 0.3333,
+      "status": "FAIL",
+      "threshold": 0.1,
+      "description": "Gap in True Positive Rate (recall) across age groups"
+    }
+  },
+  "data_audit": {
+    "gender_gap_pct": 2.2,
+    "age_gap_pct": 14.8,
+    "marital_gap_pct": 15.4,
+    "biggest_bias": "Marital Status (Single vs Divorced: 15.4% gap)"
+  },
+  "fix_recommendations": {
+    "FAIL": [
+      {
+        "issue": "Age group bias in predictions",
+        "fix": "Apply Reweighing \u2014 assign higher sample weights to underrepresented age groups during training",
+        "library": "aif360.algorithms.preprocessing.Reweighing"
+      },
+      {
+        "issue": "Marital status bias in selection rate",
+        "fix": "Remove MaritalStatus as a feature OR apply ThresholdOptimizer post-processing",
+        "library": "fairlearn.postprocessing.ThresholdOptimizer"
+      }
+    ],
+    "BORDERLINE": [
+      {
+        "issue": "Gender parity borderline",
+        "fix": "Monitor over time. Apply SMOTE oversampling if Female representation drops below 30%",
+        "library": "imblearn.over_sampling.SMOTE"
+      }
+    ]
+  }
+}
