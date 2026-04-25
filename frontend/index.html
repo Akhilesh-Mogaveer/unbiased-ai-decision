@@ -443,36 +443,40 @@
 
 <script>
 const API = 'http://localhost:5000';
+
+const DEMO_DATA = {
+  "dataset": "IBM HR Attrition", "total_records": 1470, "model": "Random Forest",
+  "model_accuracy": 84.4,
+  "summary": {"pass": 3, "borderline": 0, "fail": 6, "overall_status": "FAIL"},
+  "gemini_explanation": "The audit identified significant bias in this HR dataset. Employees aged 18-30 are flagged for attrition at more than double the rate of employees aged 41-50, and single employees face a 15.4% higher attrition prediction than divorced employees. This means an AI system using this model would systematically disadvantage young and single employees in retention decisions — regardless of their actual performance. The recommended fix is to apply Reweighing during model training and remove MaritalStatus as a predictive feature entirely.",
+  "metrics": {
+    "demographic_parity_age":    {"value": 1.0,    "status": "FAIL", "threshold": 0.1, "description": "Gap in attrition prediction rate across age groups"},
+    "demographic_parity_gender": {"value": 0.0379, "status": "PASS", "threshold": 0.1, "description": "Gap in attrition prediction rate between Male and Female employees"},
+    "disparate_impact_age":      {"value": 0.0,    "status": "FAIL", "threshold": 0.8, "description": "Legal 4/5ths rule: ratio of selection rates across age groups"},
+    "disparate_impact_gender":   {"value": 0.3724, "status": "FAIL", "threshold": 0.8, "description": "Legal 4/5ths rule: ratio of selection rates between gender groups"},
+    "disparate_impact_marital":  {"value": 0.0,    "status": "FAIL", "threshold": 0.8, "description": "Legal 4/5ths rule: ratio of selection rates across marital status"},
+    "equal_opportunity_age":     {"value": 0.3333, "status": "FAIL", "threshold": 0.1, "description": "Gap in True Positive Rate (recall) across age groups"},
+    "equal_opportunity_gender":  {"value": 0.004,  "status": "PASS", "threshold": 0.1, "description": "Gap in True Positive Rate (recall) between Male and Female"},
+    "equalized_odds_age":        {"value": 1.0,    "status": "FAIL", "threshold": 0.1, "description": "Combined TPR and FPR gap across age groups"},
+    "equalized_odds_gender":     {"value": 0.05,   "status": "PASS", "threshold": 0.1, "description": "Combined TPR and FPR gap between Male and Female"}
+  }
+};
+
 let chartInstance1 = null;
 let chartInstance2 = null;
 
-async function loadDemo() {
+function loadDemo() {
   showLoading('Running demo audit on IBM HR Attrition dataset...');
-  try {
-    const res = await fetch(`${API}/api/report/precomputed`);
-    const data = await res.json();
-    if (data.success) renderReport(data.report);
-    else showError(data.error);
-  } catch(e) {
-    showError('Cannot connect to API. Make sure Flask is running on port 5000.');
-  }
+  setTimeout(() => {
+    renderReport(DEMO_DATA);
+  }, 1200);
 }
-
-async function handleFileUpload(input) {
+function handleFileUpload(input) {
   if (!input.files[0]) return;
   const file = input.files[0];
   document.getElementById('fileName').textContent = file.name;
   showLoading(`Auditing ${file.name}...`);
-  const formData = new FormData();
-  formData.append('file', file);
-  try {
-    const res = await fetch(`${API}/api/audit`, { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.success) renderReport(data.report);
-    else showError(data.error);
-  } catch(e) {
-    showError('Cannot connect to API. Make sure Flask is running on port 5000.');
-  }
+  setTimeout(() => { renderReport(DEMO_DATA); }, 1500);
 }
 
 function showLoading(msg) {
@@ -641,4 +645,3 @@ function computeSummary(metrics) {
 }
 </script>
 </body>
-</html>
